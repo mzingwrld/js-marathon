@@ -30,6 +30,13 @@ function init () {
         changeHP(random(20), enemy);
     });
 
+    $btnPikachuAbility.addEventListener('click', function () {
+        console.log('Lightning rod!');
+        changeHP(random(20), enemy);
+        $btnPikachuAbility.disabled = true;
+        character.extraAbility = true;
+    });
+
     $btnPikachuAbility.disabled = true;
 };
 
@@ -43,12 +50,7 @@ function changeHP(damage, person) {
 
     if(person.damageHP <= 50 && !character.extraAbility) {
         $btnPikachuAbility.disabled = false;
-        $btnPikachuAbility.addEventListener('click', function () {
-            console.log('Lightning rod!');
-            changeHP(random(20), enemy);
-            $btnPikachuAbility.disabled = true;
-            character.extraAbility = true;
-        });
+
     }
 
     if(person.damageHP < damage ) {
