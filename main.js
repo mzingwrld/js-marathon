@@ -42,7 +42,7 @@ function changeHP(damage) {
     this.currentHP -= damage;
 
     const log = this === enemy ? renderLog(generateLog(this, character, damage), this) : renderLog(generateLog(this, enemy, damage), this);
-    console.log(log);
+    //console.log(log);
 
     if (this.currentHP <= 0 ) {
         this.currentHP = 0;
@@ -78,15 +78,33 @@ function init () {
         enemy.changeHP(random(20));
     });
 
+    $btn.addEventListener('click', controlClicks($btn, 10) );
+
     $btnPikachuAbility.addEventListener('click', function () {
         console.log('Lightning rod!');
         enemy.changeHP(random(20));
-        $btnPikachuAbility.disabled = true;
         character.extraAbility = true;
     });
 
+    $btnPikachuAbility.addEventListener('click', controlClicks($btnPikachuAbility, 1) );
+
     $btnPikachuAbility.disabled = true;
+
 };
+
+function controlClicks(button, amountOfClicksAvailable) {
+    let clickCounter = 0;
+    let buttonInnerText = button.innerText;
+    button.innerText = `${buttonInnerText} [${amountOfClicksAvailable-clickCounter}] `;
+
+    return function () {
+        clickCounter += 1;
+        button.innerText = `${buttonInnerText} [${amountOfClicksAvailable-clickCounter}] `;
+        if(clickCounter >= amountOfClicksAvailable) {
+            button.disabled = true;
+        }
+    }
+}
 
 function generateLog(firstPerson, secondPerson, damage) {
     const {name: nameFirstPerson, currentHP, totalHP} = firstPerson;
@@ -116,7 +134,6 @@ function renderLog(text, person) {
     $p.innerText = text;
 
     $logTitle.parentNode.insertBefore($p, $logTitle.nextSibling);
-
 }
 
 init();
