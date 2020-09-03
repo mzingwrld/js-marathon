@@ -1,69 +1,97 @@
 import Pokemon from './pokemon.js';
-import {random, generateLog} from './utils.js';
+import Game from './game.js';
+import {random, generateLog, renderLog, controlClicks} from './utils.js';
+import {pokemons} from './pokemons.js';
 
-const player1 = new Pokemon({
-    name: 'Pikachu',
-    type: 'electric',
-    hp: 100,
-    selectors: 'character',
-    extraAbility: true,
-});
-const player2 = new Pokemon({
-    name: 'Charmander',
-    type: 'fire',
-    hp: 100,
-    selectors: 'enemy',
-});
+const gameMetaData = {
+    player1: 'pokemon player1',
+    player2: 'pokemon player2',
+    logContainer: 'playground-log',
+    control: 'control',
+}
 
-const $btn = document.getElementById('btn-kick');
-const $btnPikachuAbility = document.getElementById('btn-pikachu-1');
+let initialize;
+let enemyCount = 0;
+let player1;
+let player2;
 
-$btn.addEventListener('click', function () {
-    player2.changeHP(random(20), function (damage) {
-        console.log('Some change after change HP ' + damage);
-        console.log(generateLog(player2, player1, damage));
-        renderLog(generateLog(player2, player1, damage), player2);
+function initializeCharacter (isEnemy, selectors, isNew = false) {
+    let pokemonsAmount = pokemons.length;
+    let playerPart = pokemons[random(pokemonsAmount - pokemonsAmount, pokemonsAmount - 1)];
+    let side = isEnemy ? 'enemy' : '';
+
+    let player = new Pokemon({
+        ...playerPart,
+        selectors: selectors,
+        side: side,
+        isNew: isNew,
+        showLooseResults: showLooseResults,
+        initializeFight: initializeFight,
     });
-    player1.changeHP(random(20), function (damage) {
-        console.log('Some change after change HP ' + damage);
-        console.log(generateLog(player1, player2, damage));
-        renderLog(generateLog(player2, player1, damage), player1);
-    });
-});
 
-$btn.addEventListener('click', controlClicks($btn, 10) );
+    return player;
+}
 
-$btnPikachuAbility.addEventListener('click', function () {
-    player2.changeHP(random(20), function (damage) {
-        console.log('Some change after change HP ' + damage);
-        console.log(generateLog(player2, player1, damage));
-        renderLog('Пикачу запустил Lightning Rod!', player2);
-    });
-    player1.extraAbility = false;
-});
-
-$btnPikachuAbility.addEventListener('click', controlClicks($btnPikachuAbility, 1) );
-
-function controlClicks(button, amountOfClicksAvailable) {
-    let buttonInnerText = button.innerText;
-    button.innerText = `${buttonInnerText} [${amountOfClicksAvailable}] `;
-
-    return function () {
-        amountOfClicksAvailable -= 1;
-        button.innerText = `${buttonInnerText} [${amountOfClicksAvailable}] `;
-        if(amountOfClicksAvailable <= 0) {
-            button.disabled = true;
-        }
+function initializeFight (isRefreshEnemy, isRefreshBothPlayers) {
+    if (isRefreshEnemy) {
+        initialize.handleClearButtons();
+        enemyCount += 1;
+        player2 = initializeCharacter(true, 'player2', true);
     }
-}
 
-function renderLog(text, person) {
-    const $logTitle = document.querySelector('.log-title');
-    const $p = document.createElement('p');
+    if (isRefreshBothPlayers) {
+        player1 = initializeCharacter(false, 'player1');
+        player2 = initializeCharacter(true, 'player2'); 
+    }
+    const $control = document.querySelector('.control');
     
-    $p.className = person === player2 ? 'damage-dealt' : 'damage-received';
+    player1.attacks.forEach( item => {
+        const $btn = document.createElement('button');
+        $btn.classList.add('button');
+        $btn.innerText = item.name;
+    
+        const controlClicksAmount = controlClicks($btn, item.maxCount);
+    
+        $btn.addEventListener('click', () => {
 
-    $p.innerText = text;
+            player2.changeHP(random(item.maxDamage, item.minDamage), function (damage) {
+                //console.log(generateLog(player2, player1, damage));
+                renderLog(generateLog(player2, player1, damage), player2);
+            });
+    
+            let plr2_attacks = player2.attacks;
+            let enemyAttack = player2.attacks[random(plr2_attacks.length - plr2_attacks.length, plr2_attacks.length - 1)];
+            //console.log("#### player2" , player2);
+            //console.log("#### player2.isNew" , player2.isNew);
 
-    $logTitle.parentNode.insertBefore($p, $logTitle.nextSibling);
+            if(!player2.isNew) {
+                player1.changeHP(random(enemyAttack.maxDamage, enemyAttack.minDamage), function (damage) {
+                    //console.log(generateLog(player1, player2, damage));
+                    renderLog(generateLog(player2, player1, damage), player1);
+                });
+            }
+            player2.isNew = false;
+            //console.log("#### player2.isNew" , player2.isNew);
+            controlClicksAmount();
+        });
+    
+        $control.appendChild($btn);
+    });
 }
+
+function init () {
+    initialize = new Game(gameMetaData, initializeFight);
+}
+
+function showLooseResults () {
+    //console.log("#### enemyCount, ", enemyCount);
+    if (enemyCount > 0 && enemyCount < 5) {
+        renderLog(`Ты уничтожил ${enemyCount} врага!\n Нажми на кнопку 'START GAME' чтобы попробовать снова!`,{side: true});
+    } else {
+        renderLog(`Ты уничтожил ${enemyCount} врагов!\n Нажми на кнопку 'START GAME' чтобы попробовать снова!`,{side: true});
+    }
+
+    initialize.showLooseResults();
+}
+
+init();
