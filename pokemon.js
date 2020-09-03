@@ -61,8 +61,8 @@ class Pokemon extends Selectors {
             this.renderHP();
             alert (`Бедный ${this.name} проиграл бой!`);
             if (this.side === 'enemy') {
-                this.initializeFight(true, false);
                 callback && callback(damage);
+                this.initializeFight(true, false);
                 return;
             } else {
                 callback && callback(damage);

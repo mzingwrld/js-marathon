@@ -38,11 +38,12 @@ function initializeFight (isRefreshEnemy, isRefreshBothPlayers) {
         enemyCount += 1;
         player2 = initializeCharacter(true, 'player2', true);
     }
-
+    console.log("#### isRefreshBothPlayers", isRefreshBothPlayers);
     if (isRefreshBothPlayers) {
         player1 = initializeCharacter(false, 'player1');
         player2 = initializeCharacter(true, 'player2'); 
     }
+    console.log("#### player1", player1);
     const $control = document.querySelector('.control');
     
     player1.attacks.forEach( item => {
@@ -50,33 +51,35 @@ function initializeFight (isRefreshEnemy, isRefreshBothPlayers) {
         $btn.classList.add('button');
         $btn.innerText = item.name;
     
-        const controlClicksAmount = controlClicks($btn, item.maxCount);
+        const controlClicksAmount = controlClicks($btn, item.maxCount, handlePushClicksAmountLeftToPlayer1);
     
         $btn.addEventListener('click', () => {
-
+            controlClicksAmount();
             player2.changeHP(random(item.maxDamage, item.minDamage), function (damage) {
-                //console.log(generateLog(player2, player1, damage));
                 renderLog(generateLog(player2, player1, damage), player2);
             });
     
             let plr2_attacks = player2.attacks;
             let enemyAttack = player2.attacks[random(plr2_attacks.length - plr2_attacks.length, plr2_attacks.length - 1)];
-            //console.log("#### player2" , player2);
-            //console.log("#### player2.isNew" , player2.isNew);
 
             if(!player2.isNew) {
                 player1.changeHP(random(enemyAttack.maxDamage, enemyAttack.minDamage), function (damage) {
-                    //console.log(generateLog(player1, player2, damage));
-                    renderLog(generateLog(player2, player1, damage), player1);
+                    renderLog(generateLog(player1, player2, damage), player1);
                 });
             }
             player2.isNew = false;
-            //console.log("#### player2.isNew" , player2.isNew);
-            controlClicksAmount();
         });
     
         $control.appendChild($btn);
     });
+}
+
+function handlePushClicksAmountLeftToPlayer1 (ability, clickAmountLeft) {
+    for (let i = 0; i < player1.attacks.length; i++) {
+        if(player1.attacks[i].name == ability) {
+            player1.attacks[i].maxCount = clickAmountLeft;
+        }
+    }
 }
 
 function init () {
@@ -90,7 +93,7 @@ function showLooseResults () {
     } else {
         renderLog(`Ты уничтожил ${enemyCount} врагов!\n Нажми на кнопку 'START GAME' чтобы попробовать снова!`,{side: true});
     }
-
+    enemyCount = 0;
     initialize.showLooseResults();
 }
 

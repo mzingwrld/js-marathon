@@ -1,7 +1,3 @@
-import Pokemon from './pokemon.js';
-import {random, generateLog, renderLog, controlClicks} from './utils.js';
-import {pokemons} from './pokemons.js';
-
 class Selectors {
     constructor(selectors){
         this.elLogContainer = document.querySelector(this.buildClassName(selectors.logContainer));

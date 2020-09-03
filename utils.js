@@ -34,14 +34,21 @@ export function renderLog(text, person) {
     $logTitle.parentNode.insertBefore($p, $logTitle.nextSibling);
 };
 
-export function controlClicks (button, amountOfClicksAvailable) {
+export function controlClicks (button, amountOfClicksAvailable, rememberState) {
     let buttonInnerText = button.innerText;
     button.innerText = `${buttonInnerText} [${amountOfClicksAvailable}] `;
 
+    if (amountOfClicksAvailable <= 0) {
+        button.disabled = true;
+    }
+
     return function () {
         amountOfClicksAvailable -= 1;
+        
+        rememberState(buttonInnerText, amountOfClicksAvailable);
+
         button.innerText = `${buttonInnerText} [${amountOfClicksAvailable}] `;
-        if(amountOfClicksAvailable <= 0) {
+        if (amountOfClicksAvailable <= 0) {
             button.disabled = true;
         }
     }
