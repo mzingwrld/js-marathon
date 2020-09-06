@@ -38,12 +38,12 @@ function initializeFight (isRefreshEnemy, isRefreshBothPlayers) {
         enemyCount += 1;
         player2 = initializeCharacter(true, 'player2', true);
     }
-    console.log("#### isRefreshBothPlayers", isRefreshBothPlayers);
+
     if (isRefreshBothPlayers) {
-        player1 = initializeCharacter(false, 'player1');
-        player2 = initializeCharacter(true, 'player2'); 
+        player1 = {...initializeCharacter(false, 'player1')};
+        player2 = {...initializeCharacter(true, 'player2')}; 
     }
-    console.log("#### player1", player1);
+
     const $control = document.querySelector('.control');
     
     player1.attacks.forEach( item => {
@@ -77,7 +77,27 @@ function initializeFight (isRefreshEnemy, isRefreshBothPlayers) {
 function handlePushClicksAmountLeftToPlayer1 (ability, clickAmountLeft) {
     for (let i = 0; i < player1.attacks.length; i++) {
         if(player1.attacks[i].name == ability) {
-            player1.attacks[i].maxCount = clickAmountLeft;
+            let restOfAttacks = [];
+            for (let y = 0; y < player1.attacks.length; y++) {
+                if (player1.attacks[y].name !== ability) {
+                    restOfAttacks.push(player1.attacks[y]);
+                }
+            }
+
+            let changedAttack = {
+                name : player1.attacks[i].name,
+                maxDamage : player1.attacks[i].maxDamage,
+                minDamage: player1.attacks[i].minDamage,
+                maxCount : clickAmountLeft,
+            };
+
+            restOfAttacks.splice(i, 0, changedAttack);
+
+            player1 = {
+                ...player1,
+                attacks : restOfAttacks,
+            }
+
         }
     }
 }
