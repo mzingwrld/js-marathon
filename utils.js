@@ -1,5 +1,6 @@
-export function random (num) {
-    return Math.ceil(Math.random() * num);
+export function random (max, min = 0) {
+    const num = max - min;
+    return Math.ceil(Math.random() * num) + min;
 }
 
 export function generateLog(firstPerson, secondPerson, damage) {
@@ -21,3 +22,34 @@ export function generateLog(firstPerson, secondPerson, damage) {
 
     return logs[random(logs.length) - 1];
 };
+
+export function renderLog(text, person) {
+    const $logTitle = document.querySelector('.log-title');
+    const $p = document.createElement('p');
+    
+    $p.className = person.side ? 'damage-dealt' : 'damage-received';
+
+    $p.innerText = text;
+
+    $logTitle.parentNode.insertBefore($p, $logTitle.nextSibling);
+};
+
+export function controlClicks (button, amountOfClicksAvailable, rememberState) {
+    let buttonInnerText = button.innerText;
+    button.innerText = `${buttonInnerText} [${amountOfClicksAvailable}] `;
+
+    if (amountOfClicksAvailable <= 0) {
+        button.disabled = true;
+    }
+
+    return function () {
+        amountOfClicksAvailable -= 1;
+        
+        rememberState(buttonInnerText, amountOfClicksAvailable);
+
+        button.innerText = `${buttonInnerText} [${amountOfClicksAvailable}] `;
+        if (amountOfClicksAvailable <= 0) {
+            button.disabled = true;
+        }
+    }
+}
