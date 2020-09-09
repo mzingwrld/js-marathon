@@ -1,7 +1,9 @@
 import Pokemon from './pokemon.js';
 import Game from './game.js';
 import {random, generateLog, renderLog, controlClicks} from './utils.js';
-import {pokemons} from './pokemons.js';
+import {getPokemons, getDamage} from './API.js';
+
+let pokemons = [];
 
 const gameMetaData = {
     player1: 'pokemon player1',
@@ -53,17 +55,21 @@ function initializeFight (isRefreshEnemy, isRefreshBothPlayers) {
     
         const controlClicksAmount = controlClicks($btn, item.maxCount, handlePushClicksAmountLeftToPlayer1);
     
-        $btn.addEventListener('click', () => {
+        $btn.addEventListener('click', async () => {
             controlClicksAmount();
-            player2.changeHP(random(item.maxDamage, item.minDamage), function (damage) {
+
+            const damage = await getDamage(player1.id, item.id, player2.id);
+
+
+            player2.changeHP( damage.kick.player2
+                , function (damage) {
                 renderLog(generateLog(player2, player1, damage), player2);
             });
-    
-            let plr2_attacks = player2.attacks;
-            let enemyAttack = player2.attacks[random(plr2_attacks.length - plr2_attacks.length, plr2_attacks.length - 1)];
 
             if(!player2.isNew) {
-                player1.changeHP(random(enemyAttack.maxDamage, enemyAttack.minDamage), function (damage) {
+                
+                player1.changeHP( damage.kick.player1
+                    , function (damage) {
                     renderLog(generateLog(player1, player2, damage), player1);
                 });
             }
@@ -88,6 +94,7 @@ function handlePushClicksAmountLeftToPlayer1 (ability, clickAmountLeft) {
                 name : player1.attacks[i].name,
                 maxDamage : player1.attacks[i].maxDamage,
                 minDamage: player1.attacks[i].minDamage,
+                id : player1.attacks[i].id,
                 maxCount : clickAmountLeft,
             };
 
@@ -102,12 +109,12 @@ function handlePushClicksAmountLeftToPlayer1 (ability, clickAmountLeft) {
     }
 }
 
-function init () {
+async function init () {
+    pokemons = await getPokemons();
     initialize = new Game(gameMetaData, initializeFight);
 }
 
 function showLooseResults () {
-    //console.log("#### enemyCount, ", enemyCount);
     if (enemyCount > 0 && enemyCount < 5) {
         renderLog(`Ты уничтожил ${enemyCount} врага!\n Нажми на кнопку 'START GAME' чтобы попробовать снова!`,{side: true});
     } else {
